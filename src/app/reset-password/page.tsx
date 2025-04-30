@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { signIn } from '@/lib/auth';
+import { supabase } from '@/lib/supabaseClient';
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,12 +16,22 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await supabase.auth.updateUser({
+        password: password,
+      });
+
       if (error) throw error;
-      router.push('/chats');
+
+      router.push('/login?message=Password updated successfully');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign in');
+      setError(err.message || 'An error occurred while resetting your password');
     } finally {
       setLoading(false);
     }
@@ -32,12 +41,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
-          <h2 className="text-3xl font-bold text-center text-gray-900">Sign in to your account</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900">Set new password</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link href="/register" className="font-medium text-primary hover:text-primary/90">
-              create a new account
-            </Link>
+            Please enter your new password
           </p>
         </div>
 
@@ -50,43 +56,33 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-              />
-            </div>
-
-            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                New password
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-primary hover:text-primary/90">
-                Forgot your password?
-              </Link>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm new password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+              />
             </div>
           </div>
 
@@ -95,7 +91,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Updating...' : 'Update password'}
           </button>
         </form>
       </div>
