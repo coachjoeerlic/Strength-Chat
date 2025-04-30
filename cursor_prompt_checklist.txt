@@ -1,0 +1,144 @@
+
+PWA Chat App (200 Users) - Cursor Prompt Checklist (.txt version)
+==================================================================
+
+Goal: A mobile-first, fast, installable chat app with media uploads, reactions, presence, and smart UX.
+Stack: React + Tailwind + Supabase + PWA
+
+PHASE 1: App Foundation
+------------------------
+1. Scaffold Folder & File Structure
+------------------------------------
+Set up folders and files:
+- pages/: login.tsx, register.tsx, chats.tsx, chat/[chatId].tsx, settings.tsx
+- components/: ChatList.tsx, ChatHeader.tsx, MessageBubble.tsx, MessageInput.tsx, TypingIndicator.tsx, UnreadScrollButton.tsx, UserModal.tsx
+- lib/: supabaseClient.ts, auth.ts, presence.ts
+- Tailwind setup + global styles
+
+2. Supabase Auth
+-----------------
+Implement email/password auth with:
+- Persistent session
+- Logout button (ChatHeader)
+- Forgot password via reset link
+
+3. User Profiles
+-----------------
+Create Supabase `profiles` table: id, username, avatar_url, bio.
+- Editable via settings.tsx
+- Avatar stored in Supabase Storage
+
+PHASE 2: Chat Architecture
+---------------------------
+4. Chat List Page
+------------------
+In pages/chats.tsx:
+- Display all user chats with name, preview, unread count
+- Sort by last_message_at DESC
+- Paginate 10–20 per batch
+
+5. Auto-Join on Signup
+------------------------
+On signup:
+- Add user to global group chat
+- Create 1-on-1 with admin
+- Use chat_members table
+
+6. Supabase RLS Security
+--------------------------
+RLS Policies:
+- Access limited to chats a user is in
+- Users can only edit own profile/reactions
+
+7. DB Indexing & Performance
+------------------------------
+Index:
+- messages(chat_id, created_at)
+- chat_members(user_id, chat_id)
+- chats(last_message_at)
+
+PHASE 3: Messaging Core
+------------------------
+8. Realtime Messaging
+-----------------------
+In chat/[chatId].tsx:
+- Realtime updates
+- Optimistic UI
+- Retry on fail
+
+9. Media Uploads (Images, GIFs, Videos)
+----------------------------------------
+Allow uploads of images, GIFs, and MP4/WebM.
+- Show with <img /> or <video controls />
+- Use Supabase Storage
+
+10. Lightweight Message Threading
+----------------------------------
+- Messages can have reply_to_message_id
+- Show mini preview of replied message
+- Scroll to original on click
+- Down arrow on original scrolls back to reply
+
+11. Emoji Reactions
+--------------------
+- Tap-to-react on messages
+- Store in reactions table
+- Show emoji + count
+
+12. Typing Indicator
+----------------------
+- Track typing with timeout
+- Show “User is typing...”
+
+PHASE 4: UX Enhancements
+--------------------------
+13. Smart Unread Scroll Button
+-------------------------------
+- Floating button
+- If unread: scroll to first unread
+- Else: scroll to bottom
+
+14. Persistent Scroll Position
+--------------------------------
+- Save scroll per chat in localStorage
+- Restore on reload
+- No auto-scroll on keyboard open
+
+15. Chat Header + Modal
+-------------------------
+- Show chat name, typing indicator, online count
+- Click opens modal with user avatars + bios
+
+16. Presence System
+---------------------
+- Use Supabase presence table
+- Track active users, clean stale entries
+
+PHASE 5: Polish & Stability
+-----------------------------
+17. PWA Support
+-----------------
+- Add manifest.json + service worker
+- Installable, with offline fallback
+
+18. Error Handling & Feedback
+------------------------------
+- Toasts: offline, upload/send errors
+- Skeletons for loading
+
+19. Rate Limiting
+-------------------
+- Limit messages to 1 per 2 sec
+- Optional Supabase enforcement
+
+PHASE 6: Admin & Moderation
+-----------------------------
+20. Admin Tools
+-----------------
+- Delete messages
+- Remove users from group chat
+- View/report abuse via reports table
+
+DONE!
+-----
+Feed each prompt 1–2 at a time into Cursor. Validate locally before continuing.
